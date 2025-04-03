@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "install": "npm install --omit=dev"
+    "install": "npm install"
   },
   "keywords": [
     "be",
