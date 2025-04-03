@@ -20,5 +20,5 @@ app.listen(port, () => {
   console.log(`Server berjalan di http://localhost:${port}`);
 });
 
-const routes = require("./routes");
+const routes = require("./routes/routesHandler");
 app.use("/api", routes);

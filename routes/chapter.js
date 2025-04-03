@@ -1,10 +1,7 @@
-const express = require("express");
-const pool = require("./db");
-
-const router = express.Router();
+const pool = require("../db");
 
 // Create New Chapter
-router.post("/chapter", async (req, res) => {
+const CreateChapter = async (req, res) => {
   try {
     const { nama, bobot } = req.body;
     const newItem = await pool.query(
@@ -15,10 +12,10 @@ router.post("/chapter", async (req, res) => {
   } catch (err) {
     console.error(err.message);
   }
-});
+};
 
 // Read chapter data 
-router.get("/chapter", async (req, res) => {
+const ReadChapter = async (req, res) => {
   try {
     const { one } = req.query; // Mengambil nilai one dari query parameter
 
@@ -27,7 +24,7 @@ router.get("/chapter", async (req, res) => {
       return res.json(allItems.rows);
     }
 
-    if (one) { // Jika one=true, maka id harus ada di body request
+    if (one=== true) { // Jika one=true, maka id harus ada di body request
       const { id } = req.body; // Mengambil id dari body request
       if (!id) {
         return res.status(400).json({ error: "ID is required when one = true" });
@@ -40,21 +37,47 @@ router.get("/chapter", async (req, res) => {
     console.error(err.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
-});
+};
 
 // Delete chapter data
-router.delete("/chapter", async (req, res) => {
+const DeleteChapter = async (req, res) => {
   try {
     const { id } = req.body;
 
+    if (id === undefined) {
+      return res.status(400).json({ error: "ID harus disertakan" });
+    }
+
     await pool.query("DELETE FROM chapter WHERE id = $1", [id]);
-    res.json("Item deleted!");
+    res.json("Chapter deleted!");
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
-});
+};
 
+// Edit Chapter Data
+const EditChapter = async (req, res) => {
+  try {
+    const { id, nama, bobot } = req.body;
+    
+    if (!id || !nama || bobot === undefined) {
+      return res.status(400).json({ error: "ID, nama, dan bobot harus disertakan" });
+    }
 
+    const updatedItem = await pool.query(
+      "UPDATE chapter SET nama = $1, bobot = $2 WHERE id = $3 RETURNING *;",
+      [nama, bobot, id]
+    );
 
-module.exports = router;
+    if (updatedItem.rows.length === 0) {
+      return res.status(404).json({ error: "Chapter tidak ditemukan" });
+    }
+
+    res.json(updatedItem.rows[0]);
+  } catch (error) {
+    
+  }
+}
+
+module.exports = {CreateChapter, ReadChapter, DeleteChapter, EditChapter}
