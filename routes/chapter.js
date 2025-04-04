@@ -1,18 +1,30 @@
 const pool = require("../db");
+const {newChapter, checkID} = require("../helper/inputChecker")
 
 // Create New Chapter
 const CreateChapter = async (req, res) => {
   try {
     const { nama, bobot } = req.body;
+
+    await newChapter.validateAsync({ nama, bobot }, { abortEarly: false });
+
     const newItem = await pool.query(
-      "INSERT INTO chapter(nama, bobot) VALUES ($1, $2)",
+      "INSERT INTO chapter(nama, bobot) VALUES ($1, $2) RETURNING *",
       [nama, bobot]
     );
+
     res.json(newItem.rows[0]);
   } catch (err) {
+    if (err.isJoi) {
+      const errorMessages = err.details.map(detail => detail.message);
+      return res.status(400).json({ errors: errorMessages });
+    }
+
     console.error(err.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 // Read chapter data 
 const ReadChapter = async (req, res) => {
@@ -24,16 +36,25 @@ const ReadChapter = async (req, res) => {
       return res.json(allItems.rows);
     }
 
-    if (one=== true) { // Jika one=true, maka id harus ada di body request
+    if (one === "true") { // Jika one=true, maka id harus ada di body request
       const { id } = req.body; // Mengambil id dari body request
-      if (!id) {
-        return res.status(400).json({ error: "ID is required when one = true" });
-      }
+      
+      await checkID.validateAsync(id, { abortEarly: false });
 
       const item = await pool.query("SELECT * FROM chapter WHERE id = $1", [id]);
-      return res.json(item.rows[0] || { message: "Chapter not found" });
+
+      if (item.rows.length === 0) {
+        return res.status(404).json({ error: "Chapter tidak ditemukan" });
+      }
+
+      return res.json(item.rows[0])
     }
   } catch (err) {
+    if (err.isJoi) {
+      const errorMessages = err.details.map(detail => detail.message);
+      return res.status(400).json({ errors: errorMessages });
+    }
+
     console.error(err.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -44,13 +65,21 @@ const DeleteChapter = async (req, res) => {
   try {
     const { id } = req.body;
 
-    if (id === undefined) {
-      return res.status(400).json({ error: "ID harus disertakan" });
+    await checkID.validateAsync(id, { abortEarly: false });
+
+    const deletedItem = await pool.query("DELETE FROM chapter WHERE id = $1 RETURNING *", [id]);
+
+    if (deletedItem.rows.length === 0) {
+      return res.status(404).json({ error: "Chapter tidak ditemukan" });
     }
 
-    await pool.query("DELETE FROM chapter WHERE id = $1", [id]);
     res.json("Chapter deleted!");
   } catch (err) {
+    if (err.isJoi) {
+      const errorMessages = err.details.map(detail => detail.message);
+      return res.status(400).json({ errors: errorMessages });
+    }
+
     console.error(err.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -61,9 +90,8 @@ const EditChapter = async (req, res) => {
   try {
     const { id, nama, bobot } = req.body;
     
-    if (!id || !nama || bobot === undefined) {
-      return res.status(400).json({ error: "ID, nama, dan bobot harus disertakan" });
-    }
+    await checkID.validateAsync(id, {abortEarly : false});
+    await newChapter.validateAsync({nama, bobot}, {abortEarly : false});
 
     const updatedItem = await pool.query(
       "UPDATE chapter SET nama = $1, bobot = $2 WHERE id = $3 RETURNING *;",
@@ -76,7 +104,13 @@ const EditChapter = async (req, res) => {
 
     res.json(updatedItem.rows[0]);
   } catch (error) {
-    
+    if (err.isJoi) {
+      const errorMessages = err.details.map(detail => detail.message);
+      return res.status(400).json({ errors: errorMessages });
+    }
+
+    console.error(err.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
