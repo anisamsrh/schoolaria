@@ -5,6 +5,8 @@ const ReadSyaratKelulusan = async (req, res) => {
   try {
     const allItems = await pool.query("SELECT nilai from konfigurasi WHERE nama_konfigurasi='predikat_min_lulus'");
 
+    //TODO : if nilai predikat_min_lulus g sesuai sm nama2 predikat => belum nge set predikat_min_lulus
+
     res.json(allItems.rows[0]);
   } catch (err) {
     console.error(err.message);
@@ -19,6 +21,8 @@ const EditSyaratKelulusan = async (req, res) => {
     await checkPredikat.validateAsync(predikatMin, {abortEarly});
 
     const editedItem = await pool.query("UPDATE konfigurasi SET nilai=$1 WHERE nama_konfigurasi='predikat_min_lulus' RETURNING *", [predikatMin]);
+
+    //TODO : cek di db apakah nilainya tersedia di table predikat =>klo g ada kembalikan eror
 
     res.json(editedItem.rows[0]);
   } catch (err) {

@@ -1,10 +1,12 @@
 const pool = require("../db");
+const { checkID, editNilai } = require("../helper/inputChecker");
 
 const ReadNilaiSiswa = async (req, res) => {
   try {
     const {idSiswa} = req.body;
 
     //TODO : Check id
+    await checkID.validateAsync(idSiswa, {abortEarly: false});
 
     const data = await pool.query(`
       SELECT 
@@ -21,10 +23,13 @@ const ReadNilaiSiswa = async (req, res) => {
       WHERE s.id = $1;`, [idSiswa]);
 
       //TODO : Check if hasil ada
+      if (data.rows.length<1) {
+        return res.status(404).json({eror : 'ID siswa salah atau data siswa tidak ada!'})
+      }
       res.json(data.rows);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({error : err.details[0].message});
+    res.status(500).json({error : "Internal Server Error"});
   }
 }
 
@@ -33,6 +38,7 @@ const EditNilaiSiswa = async (req, res) => {
     const {idSiswa, idSubparam, nilaiBaru} = req.body;
 
     //TODO : check input
+    await editNilai.validateAsync({idSiswa, idSubparam, nilaiBaru}, {abortEarly: false})
 
     let editedData = await pool.query(`
       UPDATE nilai SET angka_nilai=$1 
@@ -49,7 +55,7 @@ const EditNilaiSiswa = async (req, res) => {
     res.json("Nilai berhasil diubah!");
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({error : err.details[0].message});
+    res.status(500).json({error : "Internal Server Error"});
   }
 }
 
