@@ -51,7 +51,7 @@ const ReadPredicates = async (req, res) => {
     const values = [];
     allItems.rows.map(m => {
       const r = parseInt4Range(m.rentang)
-      values.push({"nama" : m.nama, "batasBawah" : r.lower, "batasAtas" : r.upper});
+      values.push({"nama" : m.nama, "batasBawah" : r.lower, "batasAtas" : (r.upper-1)});
     })
     res.json(values);
   } catch (err) {
