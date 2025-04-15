@@ -15,7 +15,7 @@ const newSubparam = Joi.object({
 
 const newSiswa = Joi.object({
   nama : Joi.string().min(3).required(),
-  nrp : Joi.string().length(10).regex(/^5024(2[0-6])1(0{2}[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])$/) //5024[23-26][001-999]
+  nrp : Joi.string().length(10).regex(/^5024(2[0-6])1(0{2}[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])$/) //5024[20-26][001-999]
 });
 
 const editNilai = Joi.object({

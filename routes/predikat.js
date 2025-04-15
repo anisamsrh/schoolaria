@@ -28,13 +28,13 @@ const SetPredicates = async (req, res) => {
 
     await pool.query(` 
         WITH onp AS (
-          INSERT INTO nilai_huruf (nama, rentang)
+          INSERT INTO predikat (nama, rentang)
           VALUES ${placeholders.join(', ')}
           ON CONFLICT (nama) DO UPDATE
           SET rentang = EXCLUDED.rentang
           RETURNING nama
         )
-        DELETE FROM nilai_huruf
+        DELETE FROM predikat
         WHERE nama NOT IN (SELECT nama FROM onp);
       `,values);
 
@@ -47,7 +47,7 @@ const SetPredicates = async (req, res) => {
 
 const ReadPredicates = async (req, res) => {
   try {
-    const allItems = await pool.query("SELECT * from nilai_huruf");
+    const allItems = await pool.query("SELECT * from predikat");
     const values = [];
     allItems.rows.map(m => {
       const r = parseInt4Range(m.rentang)

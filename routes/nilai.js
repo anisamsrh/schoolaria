@@ -5,12 +5,11 @@ const ReadNilaiSiswa = async (req, res) => {
   try {
     const {idSiswa} = req.body;
 
-    //TODO : Check id
     await checkID.validateAsync(idSiswa, {abortEarly: false});
 
     const data = await pool.query(`
       SELECT 
-        COALESCE(n.angka_nilai, 0) AS nilai,
+        COALESCE(n.angka_nilai, 0) AS "jumlah kesalahan",
         sp.nama AS subparameter,
         pr.nama AS "parameter",
         ch.nama AS chapter
@@ -22,7 +21,6 @@ const ReadNilaiSiswa = async (req, res) => {
         ON n.id_siswa = s.id AND n.id_subparam = sp.id
       WHERE s.id = $1;`, [idSiswa]);
 
-      //TODO : Check if hasil ada
       if (data.rows.length<1) {
         return res.status(404).json({eror : 'ID siswa salah atau data siswa tidak ada!'})
       }
@@ -37,7 +35,6 @@ const EditNilaiSiswa = async (req, res) => {
   try {
     const {idSiswa, idSubparam, nilaiBaru} = req.body;
 
-    //TODO : check input
     await editNilai.validateAsync({idSiswa, idSubparam, nilaiBaru}, {abortEarly: false})
 
     let editedData = await pool.query(`
@@ -48,8 +45,8 @@ const EditNilaiSiswa = async (req, res) => {
     if (editedData.rows.length === 0) {
       editedData = await pool.query(`
         INSERT INTO nilai(angka_nilai, id_siswa, id_subparam)
-        VALUES (100, 1, 12)
-        ON CONFLICT (id_siswa, id_subparam) DO NOTHING;`)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (id_siswa, id_subparam) DO NOTHING;`, [nilaiBaru, idSiswa, idSubparam])
     }
 
     res.json("Nilai berhasil diubah!");
