@@ -12,6 +12,7 @@ const ReadNilaiSiswa = async (req, res) => {
       SELECT 
         COALESCE(n.angka_nilai, 0) AS nilai,
         sp.nama AS subparameter,
+        sp.id AS "idSubparameter",
         pr.nama AS "parameter",
         ch.nama AS chapter
       FROM siswa s
