@@ -26,21 +26,20 @@ const SetPredicates = async (req, res) => {
       placeholders.push(`($${idx + 1}, int4range($${idx + 2}, $${idx + 3}, '[)'))`);
     });
 
-    await pool.query(` 
-        WITH onp AS (
-          INSERT INTO predikat (nama, rentang)
-          VALUES ${placeholders.join(', ')}
-          ON CONFLICT (nama) DO UPDATE
-          SET rentang = EXCLUDED.rentang
-          RETURNING nama
-        )
-        DELETE FROM predikat
-        WHERE nama NOT IN (SELECT nama FROM onp);
-      `,values);
+    await pool.query('BEGIN');
 
-      res.json("Predikat Updated!");
+    await pool.query('DELETE FROM predikat');
+    await pool.query(`
+      INSERT INTO predikat (nama, rentang)
+      VALUES ${placeholders.join(', ')}
+    `, values);
+
+    await pool.query('COMMIT');
+
+    res.json("Predikat Updated!");
   } catch (err) {
     console.error(err.message);
+    await pool.query('ROLLBACK');
     res.status(500).json({error : "Internal Server Error"});
   }
 };
