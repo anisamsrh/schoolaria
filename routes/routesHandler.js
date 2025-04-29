@@ -7,6 +7,7 @@ const {ReadSyaratKelulusan, EditSyaratKelulusan} = require("./kelulusan");
 const { ReadNilaiSiswa, EditNilaiSiswa } = require("./nilai");
 const { ReadPredicates, SetPredicates } = require("./predikat");
 const { EditCatatan } = require("./catatan");
+const { GetSummary } = require("./summary");
 
 const router = express.Router();
 
@@ -40,5 +41,7 @@ router.get("/predikat", ReadPredicates);
 router.put("/predikat", SetPredicates);
 
 router.put("/catatan", EditCatatan);
+
+router.get("/summary", GetSummary);
 
 module.exports = router;
