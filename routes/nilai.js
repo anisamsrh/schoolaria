@@ -36,22 +36,32 @@ const ReadNilaiSiswa = async (req, res) => {
 
 const EditNilaiSiswa = async (req, res) => {
   try {
-    const {idSiswa, idSubparam, nilaiBaru} = req.body;
+    const { idSiswa, nilai: daftarNilai } = req.body;
 
-    //TODO : check input
-    await editNilai.validateAsync({idSiswa, idSubparam, nilaiBaru}, {abortEarly: false})
+    await checkID.validateAsync(idSiswa, {abortEarly: false});
 
-    let editedData = await pool.query(`
-      UPDATE nilai SET angka_nilai=$1 
-      WHERE id_siswa=$2 AND id_subparam=$3
-      RETURNING *`, [nilaiBaru, idSiswa, idSubparam]);
+    for (const item of daftarNilai) {
+      const { idSubparam, nilai } = item;
 
-    if (editedData.rows.length === 0) {
-      editedData = await pool.query(`
-        INSERT INTO nilai(angka_nilai, id_siswa, id_subparam)
-        VALUES (100, 1, 12)
-        ON CONFLICT (id_siswa, id_subparam) DO NOTHING;`)
+      await editNilai.validateAsync({idSubparam, nilai}, {abortEarly: false})
+
+      let result = await pool.query(`
+        UPDATE nilai SET angka_nilai = $1
+        WHERE id_siswa = $2 AND id_subparam = $3
+        RETURNING *`,
+        [nilai, idSiswa, idSubparam]
+      );
+
+      if (result.rows.length === 0) {
+        await pool.query(`
+          INSERT INTO nilai (angka_nilai, id_siswa, id_subparam)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (id_siswa, id_subparam) DO NOTHING`,
+          [nilai, idSiswa, idSubparam]
+        );
+      }
     }
+
 
     res.json("Nilai berhasil diubah!");
   } catch (err) {
