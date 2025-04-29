@@ -6,6 +6,7 @@ const {AddSubParameter, EditSubParameter, ReadSubParameter, DeleteSubParameter} 
 const {ReadSyaratKelulusan, EditSyaratKelulusan} = require("./kelulusan");
 const { ReadNilaiSiswa, EditNilaiSiswa } = require("./nilai");
 const { ReadPredicates, SetPredicates } = require("./predikat");
+const { EditCatatan } = require("./catatan");
 
 const router = express.Router();
 
@@ -37,5 +38,7 @@ router.put("/nilai", EditNilaiSiswa);
 
 router.get("/predikat", ReadPredicates);
 router.put("/predikat", SetPredicates);
+
+router.put("/catatan", EditCatatan);
 
 module.exports = router;
