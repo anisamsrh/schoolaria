@@ -21,11 +21,9 @@ const newSiswa = Joi.object({
 const editNilai = Joi.object({
   idSiswa : Joi.number().min(1).required(), 
   idSubparam : Joi.number().min(1).required(), 
-  nilaiBaru : Joi.number().min(1).max(100).required()
+  nilaiBaru : Joi.number().min(0).max(100).required()
 })
 
 const checkID = Joi.number().min(1).required();
 
-const checkPredikat = Joi.number().min(0).max(100).required();
-
-module.exports = {newChapter, newParameter, newSiswa, newSubparam, checkID, checkPredikat, editNilai};
+module.exports = {newChapter, newParameter, newSiswa, newSubparam, checkID, editNilai};

@@ -1,5 +1,4 @@
 const pool = require("../db");
-const {checkPredikat} = require("../helper/inputChecker");
 
 const ReadSyaratKelulusan = async (req, res) => {
   try {
@@ -17,8 +16,6 @@ const ReadSyaratKelulusan = async (req, res) => {
 const EditSyaratKelulusan = async (req, res) => {
   try {
     const {predikatMin} = req.body;
-
-    await checkPredikat.validateAsync(predikatMin, {abortEarly});
 
     const editedItem = await pool.query("UPDATE konfigurasi SET nilai=$1 WHERE nama_konfigurasi='predikat_min_lulus' RETURNING *", [predikatMin]);
 
