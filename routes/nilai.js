@@ -3,7 +3,7 @@ const { checkID, editNilai } = require("../helper/inputChecker");
 
 const ReadNilaiSiswa = async (req, res) => {
   try {
-    const {idSiswa} = req.body;
+    const {idSiswa, idChapter} = req.body;
 
     await checkID.validateAsync(idSiswa, {abortEarly: false});
 
@@ -12,20 +12,29 @@ const ReadNilaiSiswa = async (req, res) => {
         COALESCE(n.angka_nilai, 0) AS "jumlah kesalahan",
         sp.nama AS subparameter,
         sp.id AS "idSubparameter",
-        pr.nama AS "parameter",
-        ch.nama AS chapter
+        pr.nama AS "parameter"
       FROM siswa s
       CROSS JOIN subparam sp
       JOIN param pr ON pr.id = sp.id_param
       JOIN chapter ch ON ch.id = pr.id_chapter
       LEFT JOIN nilai n 
         ON n.id_siswa = s.id AND n.id_subparam = sp.id
-      WHERE s.id = $1;`, [idSiswa]);
+      WHERE s.id = $1 AND ch.id=$2;`, [idSiswa, idChapter]);
 
       if (data.rows.length<1) {
         return res.status(404).json({eror : 'ID siswa salah atau data siswa tidak ada!'})
       }
-      res.json(data.rows);
+
+      const catatan = await pool.query(`
+        SELECT note FROM catatan
+        WHERE id_siswa = $1 AND id_chapter = $2
+        `, [idSiswa, idChapter]);
+
+      res.json({
+        idChapter,
+        nilai : data.rows,
+        catatan : catatan.rows[0] || "-"
+      });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({error : "Internal Server Error"});
@@ -34,7 +43,7 @@ const ReadNilaiSiswa = async (req, res) => {
 
 const EditNilaiSiswa = async (req, res) => {
   try {
-    const { idSiswa, nilai: daftarNilai } = req.body;
+    const { idSiswa, nilai: daftarNilai} = req.body;
 
     await checkID.validateAsync(idSiswa, {abortEarly: false});
 
