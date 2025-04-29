@@ -19,9 +19,8 @@ const newSiswa = Joi.object({
 });
 
 const editNilai = Joi.object({
-  idSiswa : Joi.number().min(1).required(), 
   idSubparam : Joi.number().min(1).required(), 
-  nilaiBaru : Joi.number().min(0).max(100).required()
+  nilai : Joi.number().min(0).max(100).required()
 })
 
 const checkID = Joi.number().min(1).required();
